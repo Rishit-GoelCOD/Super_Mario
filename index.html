@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Super Mario Bros - Hand Gesture + Keyboard Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- MediaPipe Hands & Camera Utils CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="app-container">
+    <!-- Header Bar with Quick Controls -->
+    <header id="top-bar">
+      <div class="logo">SUPER MARIO BROS <span class="tag">AI VISION EDITION</span></div>
+      <div class="top-actions">
+        <button id="btn-cloud-config" class="btn-retro">CLOUD CONFIG</button>
+        <button id="btn-audio-toggle" class="btn-retro">AUDIO: ON</button>
+        <button id="btn-cam-toggle" class="btn-retro">CAMERA: ON</button>
+        <button id="btn-fullscreen" class="btn-retro">FULLSCREEN</button>
+      </div>
+    </header>
+
+    <!-- Split Screen Main Layout (1280x600 equivalent) -->
+    <main id="game-stage">
+      <!-- Left: Gameplay & NES HUD Viewport (900px) -->
+      <section id="game-section">
+        <canvas id="game-canvas" width="900" height="520"></canvas>
+
+        <!-- Bottom Control Guides Bar (900x80) -->
+        <div id="controls-bar">
+          <div class="ctrl-card" id="card-run-right">
+            <div class="card-title">RUN RIGHT</div>
+            <div class="card-sub">4-5 FINGERS</div>
+            <div class="card-key">KEY: D / &rarr;</div>
+          </div>
+          <div class="ctrl-card" id="card-jump-right">
+            <div class="card-title">JUMP+RIGHT</div>
+            <div class="card-sub">3 FINGERS</div>
+            <div class="card-key">KEY: W+D / &uarr;+&rarr;</div>
+          </div>
+          <div class="ctrl-card" id="card-run-left">
+            <div class="card-title">RUN LEFT</div>
+            <div class="card-sub">2 FINGERS</div>
+            <div class="card-key">KEY: A / &larr;</div>
+          </div>
+          <div class="ctrl-card" id="card-jump">
+            <div class="card-title">JUMP</div>
+            <div class="card-sub">1 FINGER</div>
+            <div class="card-key">KEY: SPACE / W</div>
+          </div>
+          <div class="ctrl-card" id="card-extra">
+            <div class="card-title">1-4: WARP</div>
+            <div class="card-sub">N: NEW RUN</div>
+            <div class="card-key">M: MUTE R: RST</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: AI Vision & Leaderboard Sidebar (380px) -->
+      <aside id="sidebar-section">
+        <!-- AI Telemetry Header -->
+        <div id="ai-telemetry-header">
+          <div id="ai-gesture-display" class="badge-active">AI: INITIALIZING...</div>
+          <div id="fps-display" class="badge-info">60 FPS</div>
+        </div>
+
+        <!-- Camera Box with Overlay Canvas -->
+        <div id="camera-container">
+          <video id="webcam-video" playsinline muted></video>
+          <canvas id="camera-overlay" width="360" height="210"></canvas>
+          <div id="camera-status" class="cam-overlay-msg">STARTING CAMERA...</div>
+        </div>
+
+        <!-- 5-Finger Detection Indicators -->
+        <div id="fingers-bar">
+          <div class="finger-pill" id="f-thumb">THB</div>
+          <div class="finger-pill" id="f-index">IDX</div>
+          <div class="finger-pill" id="f-middle">MID</div>
+          <div class="finger-pill" id="f-ring">RNG</div>
+          <div class="finger-pill" id="f-pinky">PNK</div>
+        </div>
+
+        <!-- Cloud Sync Status Bar -->
+        <div id="cloud-status-bar">
+          <span class="label">CLOUD:</span>
+          <span id="cloud-sync-badge" class="badge-status status-local">LOCAL ONLY</span>
+          <button id="btn-sync-now" title="Retry Cloud Sync">&#8635;</button>
+        </div>
+
+        <!-- Live Top Leaderboard -->
+        <div id="leaderboard-container">
+          <div class="lb-header">HALL OF FAME (TOP RUNS)</div>
+          <div id="leaderboard-list">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Registration Modal (Player Name + Photo Snapshot) -->
+  <div id="register-modal" class="modal-overlay">
+    <div class="modal-content retro-panel">
+      <h2 class="nes-title">ENTER THE MUSHROOM KINGDOM</h2>
+      <p class="subtitle">AI GESTURE-POWERED SPEEDRUN CHALLENGE</p>
+
+      <div class="modal-body">
+        <div class="avatar-preview-box">
+          <canvas id="photo-preview-canvas" width="160" height="120"></canvas>
+          <button id="btn-take-photo" class="btn-retro">CAPTURE PHOTO (SPACE)</button>
+        </div>
+
+        <div class="input-group">
+          <label for="player-name-input">PLAYER NAME / INITIALS:</label>
+          <input type="text" id="player-name-input" maxlength="12" placeholder="MARIO" value="MARIO" autocomplete="off" autofocus>
+        </div>
+
+        <div class="checkbox-group">
+          <label>
+            <input type="checkbox" id="cloud-consent-check" checked>
+            Sync Score &amp; Photo to Cloud Leaderboard
+          </label>
+        </div>
+
+        <div class="gesture-hint-card">
+          <div class="hint-title">HAND GESTURE CONTROLS:</div>
+          <div class="hint-row"><span>&#9995; 4-5 Fingers:</span> <strong>RUN RIGHT</strong></div>
+          <div class="hint-row"><span>&#9996;&#65039; 3 Fingers:</span> <strong>JUMP + RIGHT</strong></div>
+          <div class="hint-row"><span>&#9996; 2 Fingers:</span> <strong>RUN LEFT</strong></div>
+          <div class="hint-row"><span>&#9757; 1 Finger:</span> <strong>JUMP</strong></div>
+          <div class="hint-row"><span>&#9994; Closed Fist:</span> <strong>STOP</strong></div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-start-game" class="btn-retro btn-primary">LAUNCH 4-WORLD TOUR (ENTER)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cloud Sheets Configuration Modal -->
+  <div id="cloud-modal" class="modal-overlay hidden">
+    <div class="modal-content retro-panel">
+      <h2 class="nes-title">GOOGLE SHEETS SYNC SETUP</h2>
+      <p class="subtitle">AUTOMATICALLY RECORD GLOBAL SCORES &amp; AVATARS</p>
+
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="cfg-webhook-url">GOOGLE APPS SCRIPT WEBHOOK URL:</label>
+          <input type="url" id="cfg-webhook-url" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <div class="input-group">
+          <label for="cfg-webhook-token">SECRET AUTH TOKEN:</label>
+          <input type="text" id="cfg-webhook-token" placeholder="mario_secret_token_123">
+        </div>
+        <div class="instructions-box">
+          <p><strong>Quick 2-minute Setup:</strong></p>
+          <ol>
+            <li>Create a new Google Sheet.</li>
+            <li>Click <em>Extensions &gt; Apps Script</em> and paste code from <code>google_apps_script.js</code>.</li>
+            <li>Click <em>Deploy &gt; New deployment &gt; Web app</em> (Access: Anyone).</li>
+            <li>Copy the Web App URL and paste it above!</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-save-cloud" class="btn-retro btn-primary">SAVE &amp; CONNECT</button>
+        <button id="btn-close-cloud" class="btn-retro">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="audio.js"></script>
+  <script src="leaderboard.js"></script>
+  <script src="hand_tracking.js"></script>
+  <script src="game_engine.js"></script>
+</body>
+</html>
+

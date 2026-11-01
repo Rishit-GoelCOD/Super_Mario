@@ -1,0 +1,21 @@
+{
+  "name": "super-mario-bros-ai-vision",
+  "version": "1.0.0",
+  "description": "Super Mario Bros 4-World Speedrun Game powered by MediaPipe AI Hand Gestures and Google Sheets Cloud Leaderboard",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "mario",
+    "pygame",
+    "mediapipe",
+    "hand-tracking",
+    "ai",
+    "nes",
+    "google-sheets"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+

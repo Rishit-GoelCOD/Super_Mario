@@ -1,0 +1,22 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+.env/
+
+# Secrets & Local Data
+.mario_secret
+pending_sync.json*
+leaderboard_secure.json.tmp
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# OS Artifacts
+.DS_Store
+Thumbs.db
+
