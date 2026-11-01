@@ -95,7 +95,10 @@
 
         <!-- Live Top Leaderboard -->
         <div id="leaderboard-container">
-          <div class="lb-header">&#127942; HALL OF FAME</div>
+          <div class="lb-header" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>&#127942; HALL OF FAME</span>
+            <a href="leaderboard_page.html" target="_blank" style="font-size:7px;color:#fcd116;text-decoration:none;border:1px solid #fcd116;padding:3px 7px;border-radius:3px;font-family:inherit;">EXPAND &#9654;</a>
+          </div>
           <div id="leaderboard-list">
             <!-- Populated dynamically -->
           </div>
@@ -118,7 +121,7 @@
 
         <div class="input-group">
           <label for="player-name-input">PLAYER NAME / INITIALS:</label>
-          <input type="text" id="player-name-input" maxlength="12" placeholder="MARIO" value="MARIO" autocomplete="off" autofocus>
+          <input type="text" id="player-name-input" maxlength="16" placeholder="MARIO" value="MARIO" autocomplete="off" autofocus>
         </div>
 
         <div class="checkbox-group">

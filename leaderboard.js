@@ -71,13 +71,13 @@ class LeaderboardManager {
   }
 
   recordScore(name, score, coins, level, photo_b64) {
-    const cleanName = (name || 'MARIO').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 10) || 'MARIO';
+    const cleanName = (name || 'MARIO').toUpperCase().replace(/[^A-Z0-9_\-. ]/g, '').slice(0, 16) || 'MARIO';
     const entry = {
       name: cleanName,
       score: parseInt(score, 10) || 0,
       coins: parseInt(coins, 10) || 0,
       level: parseInt(level, 10) || 1,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toISOString(),
       photo_b64: photo_b64 || ""
     };
 
@@ -168,22 +168,64 @@ class LeaderboardManager {
     this.entries.forEach((entry, idx) => {
       const row = document.createElement('div');
       row.className = 'lb-row';
+      row.style.cursor = 'pointer';
+      row.title = 'Click to view full leaderboard';
+      row.addEventListener('click', () => {
+        window.open('leaderboard_page.html', '_blank');
+      });
 
-      const avatarSrc = entry.photo_b64 
-        ? `data:image/jpeg;base64,${entry.photo_b64}` 
-        : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="28" fill="%23e52521"><rect width="36" height="28"/><circle cx="18" cy="14" r="8" fill="%23fcd116"/></svg>';
-
+      // ── Rank ──
+      const rankEl = document.createElement('span');
+      rankEl.className = 'lb-rank';
       const medal = (idx === 0) ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+      rankEl.textContent = medal;
 
-      row.innerHTML = `
-        <span class="lb-rank">${medal}</span>
-        <img class="lb-avatar" src="${avatarSrc}" alt="${entry.name}">
-        <span class="lb-name">${entry.name}</span>
-        <span class="lb-score">${String(entry.score).padStart(6, '0')}</span>
-        <span class="lb-coins">C:${entry.coins} W:1-${entry.level}</span>
-      `;
+      // ── Avatar (set src via JS to avoid innerHTML injection) ──
+      const img = document.createElement('img');
+      img.className = 'lb-avatar';
+      img.alt = entry.name;
+      if (entry.photo_b64) {
+        // strip any existing prefix before adding it
+        const raw = entry.photo_b64.replace(/^data:image\/[^;]+;base64,/, '');
+        img.src = `data:image/jpeg;base64,${raw}`;
+      } else {
+        img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="28" fill="%23e52521"><rect width="36" height="28"/><circle cx="18" cy="14" r="8" fill="%23fcd116"/></svg>';
+      }
+
+      // ── Name (truncate display to 8 chars, show full on hover) ──
+      const nameEl = document.createElement('span');
+      nameEl.className = 'lb-name';
+      nameEl.textContent = entry.name.length > 8 ? entry.name.slice(0, 7) + '…' : entry.name;
+      nameEl.title = entry.name;
+
+      // ── Score ──
+      const scoreEl = document.createElement('span');
+      scoreEl.className = 'lb-score';
+      scoreEl.textContent = String(entry.score).padStart(6, '0');
+
+      // ── Coins / World ──
+      const coinsEl = document.createElement('span');
+      coinsEl.className = 'lb-coins';
+      coinsEl.textContent = `C:${entry.coins} W:1-${entry.level}`;
+
+      row.appendChild(rankEl);
+      row.appendChild(img);
+      row.appendChild(nameEl);
+      row.appendChild(scoreEl);
+      row.appendChild(coinsEl);
       listEl.appendChild(row);
     });
+
+    // ── "View Full Leaderboard" link ──
+    const viewAll = document.createElement('div');
+    viewAll.style.cssText = 'text-align:center;margin-top:8px;';
+    const link = document.createElement('a');
+    link.href = 'leaderboard_page.html';
+    link.target = '_blank';
+    link.textContent = '▶ VIEW FULL LEADERBOARD';
+    link.style.cssText = 'color:#fcd116;font-size:8px;text-decoration:none;font-family:"Press Start 2P",monospace;letter-spacing:0.05em;';
+    viewAll.appendChild(link);
+    listEl.parentElement.appendChild(viewAll);
   }
 }
 

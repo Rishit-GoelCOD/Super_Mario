@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏆 Super Mario – Hall of Fame</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0c1017;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 3px solid #fcd116;
+    }
+    .top-bar h1 {
+      font-size: clamp(12px, 3vw, 22px);
+      color: #fcd116;
+      letter-spacing: 0.06em;
+    }
+    .top-bar .sub {
+      font-size: 8px;
+      color: #7ab;
+      margin-top: 6px;
+    }
+    .btn-back {
+      background: #1a2030;
+      color: #fcd116;
+      border: 2px solid #fcd116;
+      padding: 8px 16px;
+      font-family: inherit;
+      font-size: 9px;
+      cursor: pointer;
+      text-decoration: none;
+      border-radius: 3px;
+      transition: background 0.15s;
+    }
+    .btn-back:hover { background: #fcd116; color: #0c1017; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      flex: 1;
+      min-width: 120px;
+      background: #121824;
+      border: 2px solid #2d3b50;
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .stat-card .val {
+      font-size: clamp(14px, 3vw, 22px);
+      color: #3fff6e;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .stat-card .lbl {
+      font-size: 7px;
+      color: #7ab;
+    }
+
+    /* ── Leaderboard table ── */
+    .lb-table {
+      width: 100%;
+      max-width: 900px;
+      border-collapse: separate;
+      border-spacing: 0 6px;
+    }
+
+    .lb-table thead th {
+      font-size: 8px;
+      color: #7ab;
+      text-align: left;
+      padding: 0 12px 8px;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid #2d3b50;
+    }
+    .lb-table thead th.right { text-align: right; }
+
+    .lb-table tbody tr {
+      background: #121824;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .lb-table tbody tr:hover { background: #1a2535; }
+
+    .lb-table td {
+      padding: 14px 12px;
+      vertical-align: middle;
+    }
+    .lb-table td:first-child { border-radius: 6px 0 0 6px; }
+    .lb-table td:last-child  { border-radius: 0 6px 6px 0; }
+
+    /* Rank */
+    .col-rank {
+      width: 52px;
+      text-align: center;
+      font-size: clamp(18px, 3vw, 26px);
+    }
+    .rank-num {
+      font-size: 13px;
+      color: #7ab;
+    }
+
+    /* Avatar */
+    .col-avatar { width: 72px; }
+    .avatar-img {
+      width: 64px;
+      height: 52px;
+      object-fit: cover;
+      border: 2px solid #fcd116;
+      border-radius: 4px;
+      display: block;
+    }
+    .avatar-placeholder {
+      width: 64px;
+      height: 52px;
+      background: #1e2a3a;
+      border: 2px solid #2d3b50;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    /* Name */
+    .col-name { min-width: 140px; }
+    .player-name {
+      font-size: clamp(10px, 2vw, 16px);
+      color: #fff;
+      letter-spacing: 0.04em;
+      word-break: break-all;
+    }
+    .player-date {
+      font-size: 7px;
+      color: #4a6080;
+      margin-top: 5px;
+    }
+
+    /* Score */
+    .col-score { text-align: right; }
+    .score-val {
+      font-size: clamp(12px, 2.5vw, 18px);
+      color: #3fff6e;
+    }
+
+    /* Coins */
+    .col-coins { text-align: right; min-width: 80px; }
+    .coins-val {
+      font-size: 10px;
+      color: #fcd116;
+    }
+    .world-val {
+      font-size: 8px;
+      color: #7ab;
+      margin-top: 4px;
+    }
+
+    /* Gold / Silver / Bronze row accents */
+    .rank-1 { border-left: 4px solid #fcd116 !important; }
+    .rank-2 { border-left: 4px solid #c0c0c0 !important; }
+    .rank-3 { border-left: 4px solid #cd7f32 !important; }
+
+    /* Empty state */
+    .empty-state {
+      width: 100%;
+      max-width: 900px;
+      text-align: center;
+      padding: 60px 24px;
+      background: #121824;
+      border: 2px solid #2d3b50;
+      border-radius: 8px;
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 20px; }
+    .empty-state p { font-size: 10px; color: #7ab; line-height: 2; }
+
+    /* Footer */
+    footer {
+      margin-top: 40px;
+      font-size: 7px;
+      color: #4a6080;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div>
+      <h1>🏆 HALL OF FAME</h1>
+      <div class="sub">SUPER MARIO BROS – AI VISION EDITION</div>
+    </div>
+    <a href="index.html" class="btn-back">◀ BACK TO GAME</a>
+  </div>
+
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <div id="lb-content"></div>
+
+  <footer>SCORES SAVED IN YOUR BROWSER · CLEAR FROM IN-GAME LEADERBOARD</footer>
+
+  <script>
+    const STORAGE_KEY = 'mario_leaderboard_v1';
+
+    function loadEntries() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed)
+          ? parsed.filter(e => e && e.name && e.name !== 'PLAYER1')
+          : [];
+      } catch { return []; }
+    }
+
+    function renderStats(entries) {
+      const bar = document.getElementById('stats-bar');
+      if (entries.length === 0) { bar.style.display = 'none'; return; }
+
+      const topScore = Math.max(...entries.map(e => e.score));
+      const totalCoins = entries.reduce((s, e) => s + (e.coins || 0), 0);
+      const uniquePlayers = new Set(entries.map(e => e.name)).size;
+
+      bar.innerHTML = `
+        <div class="stat-card"><span class="val">${entries.length}</span><span class="lbl">TOTAL RUNS</span></div>
+        <div class="stat-card"><span class="val">${String(topScore).padStart(6,'0')}</span><span class="lbl">HIGH SCORE</span></div>
+        <div class="stat-card"><span class="val">${totalCoins}</span><span class="lbl">TOTAL COINS</span></div>
+        <div class="stat-card"><span class="val">${uniquePlayers}</span><span class="lbl">PLAYERS</span></div>
+      `;
+    }
+
+    function renderTable(entries) {
+      const container = document.getElementById('lb-content');
+      container.style.width = '100%';
+      container.style.maxWidth = '900px';
+
+      if (entries.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">👾</div>
+            <p>NO RUNS RECORDED YET.<br>GO PLAY AND SET A HIGH SCORE!</p>
+          </div>`;
+        return;
+      }
+
+      const table = document.createElement('table');
+      table.className = 'lb-table';
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>PHOTO</th>
+            <th>PLAYER</th>
+            <th class="right">SCORE</th>
+            <th class="right">COINS / WORLD</th>
+          </tr>
+        </thead>
+      `;
+
+      const tbody = document.createElement('tbody');
+
+      entries.forEach((entry, idx) => {
+        const tr = document.createElement('tr');
+        if (idx === 0) tr.classList.add('rank-1');
+        else if (idx === 1) tr.classList.add('rank-2');
+        else if (idx === 2) tr.classList.add('rank-3');
+
+        // Rank cell
+        const tdRank = document.createElement('td');
+        tdRank.className = 'col-rank';
+        const medals = ['🥇','🥈','🥉'];
+        tdRank.innerHTML = idx < 3
+          ? `<span>${medals[idx]}</span>`
+          : `<span class="rank-num">#${idx + 1}</span>`;
+
+        // Avatar cell
+        const tdAvatar = document.createElement('td');
+        tdAvatar.className = 'col-avatar';
+        if (entry.photo_b64) {
+          const raw = entry.photo_b64.replace(/^data:image\/[^;]+;base64,/, '');
+          const img = document.createElement('img');
+          img.className = 'avatar-img';
+          img.src = `data:image/jpeg;base64,${raw}`;
+          img.alt = entry.name;
+          tdAvatar.appendChild(img);
+        } else {
+          tdAvatar.innerHTML = '<div class="avatar-placeholder">👤</div>';
+        }
+
+        // Name cell
+        const tdName = document.createElement('td');
+        tdName.className = 'col-name';
+        const date = entry.timestamp
+          ? new Date(entry.timestamp).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'})
+          : '';
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'player-name';
+        nameDiv.textContent = entry.name;
+        tdName.appendChild(nameDiv);
+        if (date) {
+          const dateDiv = document.createElement('div');
+          dateDiv.className = 'player-date';
+          dateDiv.textContent = date;
+          tdName.appendChild(dateDiv);
+        }
+
+        // Score cell
+        const tdScore = document.createElement('td');
+        tdScore.className = 'col-score';
+        const scoreDiv = document.createElement('div');
+        scoreDiv.className = 'score-val';
+        scoreDiv.textContent = String(entry.score).padStart(6, '0');
+        tdScore.appendChild(scoreDiv);
+
+        // Coins/world cell
+        const tdCoins = document.createElement('td');
+        tdCoins.className = 'col-coins';
+        const coinsDiv = document.createElement('div');
+        coinsDiv.className = 'coins-val';
+        coinsDiv.textContent = `🪙 ${String(entry.coins || 0).padStart(3,'0')}`;
+        const worldDiv = document.createElement('div');
+        worldDiv.className = 'world-val';
+        worldDiv.textContent = `WORLD 1-${entry.level || 1}`;
+        tdCoins.appendChild(coinsDiv);
+        tdCoins.appendChild(worldDiv);
+
+        tr.appendChild(tdRank);
+        tr.appendChild(tdAvatar);
+        tr.appendChild(tdName);
+        tr.appendChild(tdScore);
+        tr.appendChild(tdCoins);
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      container.appendChild(table);
+    }
+
+    // ── Bootstrap ──
+    const entries = loadEntries();
+    renderStats(entries);
+    renderTable(entries);
+  </script>
+</body>
+</html>

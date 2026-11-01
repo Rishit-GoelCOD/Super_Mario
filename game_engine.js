@@ -1182,7 +1182,7 @@ function openRegisterModal() {
 
 function startGameSession() {
   const nameInput = document.getElementById('player-name-input');
-  playerName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim().toUpperCase().slice(0, 10) : 'MARIO';
+  playerName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim().toUpperCase().slice(0, 16) : 'MARIO';
 
   const consentCheck = document.getElementById('cloud-consent-check');
   allowCloudSync = consentCheck ? consentCheck.checked : true;
