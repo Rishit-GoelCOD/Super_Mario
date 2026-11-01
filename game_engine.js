@@ -689,7 +689,7 @@ function updateGame(dt) {
     audio.playHurt();
     lives--;
     if (lives <= 0) {
-      leaderboard.recordScore(playerName, score, coin_count, currentLevel, playerPhotoB64, allowCloudSync);
+      leaderboard.recordScore(playerName, score, coin_count, currentLevel, playerPhotoB64);
       score = 0;
       coin_count = 0;
       lives = 3;
@@ -744,7 +744,7 @@ function updateGame(dt) {
         lives--;
         invincible_frames = 75;
         if (lives <= 0) {
-          leaderboard.recordScore(playerName, score, coin_count, currentLevel, playerPhotoB64, allowCloudSync);
+          leaderboard.recordScore(playerName, score, coin_count, currentLevel, playerPhotoB64);
           score = 0;
           coin_count = 0;
           lives = 3;
@@ -776,7 +776,7 @@ function updateGame(dt) {
       banner_text = levelNames[nextLevel] || `WORLD 1-${nextLevel}!`;
       banner_frames = 100;
     } else {
-      leaderboard.recordScore(playerName, score, coin_count, 4, playerPhotoB64, allowCloudSync);
+      leaderboard.recordScore(playerName, score, coin_count, 4, playerPhotoB64);
       banner_text = `ALL 4 WORLDS CLEAR! ${score} PTS`;
       banner_frames = 120;
       score = 0;
@@ -1237,14 +1237,13 @@ document.getElementById('btn-save-cloud')?.addEventListener('click', () => {
   if (modal) modal.classList.add('hidden');
 });
 
-document.getElementById('btn-sync-now')?.addEventListener('click', () => {
-  leaderboard.flushPendingQueue();
+document.getElementById('btn-clear-lb')?.addEventListener('click', () => {
+  leaderboard.clearLeaderboard();
 });
 
 document.getElementById('btn-fullscreen')?.addEventListener('click', () => {
-  const app = document.getElementById('app-container');
   if (!document.fullscreenElement) {
-    app.requestFullscreen().catch(() => {});
+    document.documentElement.requestFullscreen().catch(() => {});
   } else {
     document.exitFullscreen().catch(() => {});
   }
