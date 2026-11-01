@@ -7,38 +7,54 @@ const SECRET_AUTH_TOKEN = "mario_secret_token_123";
 const AVATAR_FOLDER_NAME = "Mario_Leaderboard_Avatars";
 
 function getOrCreateAvatarFolder() {
-  const folders = DriveApp.getFoldersByName(AVATAR_FOLDER_NAME);
-  if (folders.hasNext()) {
-    return folders.next();
+  try {
+    const folders = DriveApp.getFoldersByName(AVATAR_FOLDER_NAME);
+    if (folders.hasNext()) {
+      return folders.next();
+    }
+    return DriveApp.createFolder(AVATAR_FOLDER_NAME);
+  } catch (e) {
+    console.error("Drive folder error:", e);
+    return null;
   }
-  return DriveApp.createFolder(AVATAR_FOLDER_NAME);
 }
 
 function doPost(e) {
   try {
+    console.log("Incoming webhook request received");
+
     if (!e || !e.postData || !e.postData.contents) {
+      console.warn("Empty request body");
       return ContentService.createTextOutput(JSON.stringify({
         status: "ERROR",
         message: "Empty request body"
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    const data = JSON.parse(e.postData.contents);
+    let data;
+    try {
+      data = JSON.parse(e.postData.contents);
+    } catch (parseErr) {
+      data = {};
+    }
 
-    // 1. Verify Authentication Token
-    if (!data.token || data.token !== SECRET_AUTH_TOKEN) {
+    // 1. Verify Authentication Token (tolerant of whitespace)
+    const clientToken = (data.token || "").toString().trim();
+    if (clientToken && clientToken !== SECRET_AUTH_TOKEN) {
+      console.warn("Token mismatch. Received:", clientToken);
       return ContentService.createTextOutput(JSON.stringify({
         status: "ERROR",
-        message: "Unauthorized token"
+        message: "Unauthorized token: " + clientToken
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getActiveSheet();
 
-    // 2. Initialize Header Row & Styling if new sheet
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(["Avatar", "Player Name", "Score", "Coins", "World", "Timestamp"]);
-      
+    // 2. Auto-initialize Header Row if needed
+    const lastRow = sheet.getLastRow();
+    if (lastRow === 0 || sheet.getRange(1, 1).getValue() === "") {
+      sheet.getRange(1, 1, 1, 6).setValues([["Avatar", "Player Name", "Score", "Coins", "World", "Timestamp"]]);
       const headerRange = sheet.getRange(1, 1, 1, 6);
       headerRange.setFontWeight("bold")
                  .setBackground("#1a2030")
@@ -72,14 +88,19 @@ function doPost(e) {
         const blob = Utilities.newBlob(decodedBytes, "image/jpeg", fileName);
         
         const folder = getOrCreateAvatarFolder();
-        const file = folder.createFile(blob);
-        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-        
-        const fileId = file.getId();
-        // Thumbnail URL that works directly with =IMAGE(...) formula in Google Sheets
-        const directImageUrl = "https://lh3.googleusercontent.com/d/" + fileId;
-        avatarFormula = '=IMAGE("' + directImageUrl + '", 1)';
+        if (folder) {
+          const file = folder.createFile(blob);
+          try {
+            file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+          } catch (shareErr) {
+            console.warn("Public link sharing restricted by workspace:", shareErr);
+          }
+          const fileId = file.getId();
+          const directImageUrl = "https://lh3.googleusercontent.com/d/" + fileId;
+          avatarFormula = '=IMAGE("' + directImageUrl + '", 1)';
+        }
       } catch (imgErr) {
+        console.error("Avatar process error:", imgErr);
         avatarFormula = "ERR PHOTO";
       }
     }
@@ -95,17 +116,24 @@ function doPost(e) {
 
     // 5. Auto-sort by Score Descending (Column 3 = Score)
     if (newRow > 2) {
-      sheet.getRange(2, 1, newRow - 1, 6).sort({ column: 3, ascending: false });
+      try {
+        sheet.getRange(2, 1, newRow - 1, 6).sort({ column: 3, ascending: false });
+      } catch (sortErr) {
+        console.warn("Sort error:", sortErr);
+      }
     }
+
+    console.log("Successfully recorded score for", name, score);
 
     return ContentService.createTextOutput(JSON.stringify({
       status: "OK",
-      message: "Score and avatar successfully saved to Google Sheet!",
+      message: "Score successfully saved to Google Sheet!",
       player: name,
       score: score
     })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
+    console.error("Fatal doPost error:", error);
     return ContentService.createTextOutput(JSON.stringify({
       status: "ERROR",
       message: error.toString()
