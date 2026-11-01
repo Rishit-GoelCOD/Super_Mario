@@ -71,7 +71,7 @@ class LeaderboardManager {
   }
 
   recordScore(name, score, coins, level, photo_b64) {
-    const cleanName = (name || 'MARIO').toUpperCase().replace(/[^A-Z0-9_\-. ]/g, '').slice(0, 36) || 'MARIO';
+    const cleanName = (name || 'MARIO').trim().slice(0, 36) || 'MARIO';
     const entry = {
       name: cleanName,
       score: parseInt(score, 10) || 0,
