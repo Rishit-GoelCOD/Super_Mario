@@ -1072,10 +1072,11 @@ function renderGame() {
   ctx.lineWidth = 2;
   ctx.strokeRect(0, 0, GAME_W, 48);
 
-  // Player Name & Score
-  ctx.font = '10px "Press Start 2P", monospace';
+  // Player Name & Score — adaptive font size for longer names
+  const nameFontSize = playerName.length <= 6 ? 10 : playerName.length <= 9 ? 8 : 7;
+  ctx.font = `${nameFontSize}px "Press Start 2P", monospace`;
   ctx.fillStyle = '#ffffff';
-  ctx.fillText(playerName, 20, 20);
+  ctx.fillText(playerName, 20, playerName.length <= 6 ? 20 : 22);
   ctx.fillStyle = COLORS.Q_GOLD;
   ctx.fillText(String(score).padStart(6, '0'), 20, 38);
 

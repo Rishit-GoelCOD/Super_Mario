@@ -171,7 +171,7 @@ class LeaderboardManager {
 
       const avatarSrc = entry.photo_b64 
         ? `data:image/jpeg;base64,${entry.photo_b64}` 
-        : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="22" fill="%23e52521"><rect width="28" height="22"/><circle cx="14" cy="11" r="6" fill="%23fcd116"/></svg>';
+        : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="28" fill="%23e52521"><rect width="36" height="28"/><circle cx="18" cy="14" r="8" fill="%23fcd116"/></svg>';
 
       const medal = (idx === 0) ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
 

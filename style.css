@@ -365,8 +365,9 @@ body {
   background: #121824;
   border: 1px solid var(--card-border);
   border-radius: 3px;
-  padding: 4px 6px;
+  padding: 5px 6px;
   font-size: 9px;
+  gap: 4px;
 }
 
 .lb-rank {
@@ -375,13 +376,14 @@ body {
 }
 
 .lb-avatar {
-  width: 28px;
-  height: 22px;
+  width: 36px;
+  height: 28px;
   background: #000;
   border: 1px solid var(--nes-gold);
   border-radius: 2px;
   margin-right: 8px;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .lb-name {
@@ -390,16 +392,23 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 90px;
+  font-size: clamp(6px, 1.8vw, 9px);
+  letter-spacing: 0.02em;
 }
 
 .lb-score {
   color: var(--nes-neon-green);
-  margin-right: 6px;
+  margin-right: 4px;
+  flex-shrink: 0;
+  font-size: clamp(7px, 1.6vw, 9px);
 }
 
 .lb-coins {
   color: var(--nes-gold);
-  font-size: 8px;
+  font-size: 7px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Modal Windows */
