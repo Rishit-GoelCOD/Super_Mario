@@ -1073,10 +1073,16 @@ function renderGame() {
   ctx.strokeRect(0, 0, GAME_W, 48);
 
   // Player Name & Score — adaptive font size for longer names
-  const nameFontSize = playerName.length <= 6 ? 10 : playerName.length <= 9 ? 8 : 7;
+  const nameFontSize = playerName.length <= 6 ? 10 : playerName.length <= 10 ? 8 : playerName.length <= 16 ? 7 : 6;
   ctx.font = `${nameFontSize}px "Press Start 2P", monospace`;
   ctx.fillStyle = '#ffffff';
+  // clip to available width (first 200px of HUD)
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, 200, 48);
+  ctx.clip();
   ctx.fillText(playerName, 20, playerName.length <= 6 ? 20 : 22);
+  ctx.restore();
   ctx.fillStyle = COLORS.Q_GOLD;
   ctx.fillText(String(score).padStart(6, '0'), 20, 38);
 
@@ -1182,7 +1188,7 @@ function openRegisterModal() {
 
 function startGameSession() {
   const nameInput = document.getElementById('player-name-input');
-  playerName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim().toUpperCase().slice(0, 16) : 'MARIO';
+  playerName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim().toUpperCase().slice(0, 36) : 'MARIO';
 
   const consentCheck = document.getElementById('cloud-consent-check');
   allowCloudSync = consentCheck ? consentCheck.checked : true;
