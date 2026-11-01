@@ -264,16 +264,16 @@ class HandTracker {
   captureSnapshot() {
     if (!this.videoElement || !this.videoElement.videoWidth) return null;
     const snapCanvas = document.createElement('canvas');
-    snapCanvas.width = 64;
-    snapCanvas.height = 48;
+    snapCanvas.width = 160;
+    snapCanvas.height = 120;
     const snapCtx = snapCanvas.getContext('2d');
 
     // Mirror image for consistency
-    snapCtx.translate(64, 0);
+    snapCtx.translate(160, 0);
     snapCtx.scale(-1, 1);
-    snapCtx.drawImage(this.videoElement, 0, 0, 64, 48);
+    snapCtx.drawImage(this.videoElement, 0, 0, 160, 120);
 
-    const dataUrl = snapCanvas.toDataURL('image/jpeg', 0.65);
+    const dataUrl = snapCanvas.toDataURL('image/jpeg', 0.75);
     this.capturedPhotoB64 = dataUrl.split(',')[1] || "";
 
     // Draw on preview canvas in registration modal
