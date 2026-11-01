@@ -128,7 +128,7 @@ class LeaderboardManager {
     };
 
     try {
-      // Use mode: 'no-cors' to bypass Google Apps Script 302 redirect CORS restrictions in browsers
+      // Primary: POST request with mode: 'no-cors' (includes base64 photo avatar)
       await fetch(this.webhookUrl, {
         method: 'POST',
         mode: 'no-cors',
@@ -140,10 +140,29 @@ class LeaderboardManager {
       setTimeout(() => this.updateCloudBadge(), 4000);
       return true;
     } catch (err) {
-      console.warn("Cloud sync error:", err);
-      this.queuePending(entry);
-      this.updateCloudBadge('QUEUED RETRY');
-      return false;
+      console.warn("POST sync failed, trying GET fallback...", err);
+      // Fallback: GET request (CORS-immune query beacon)
+      try {
+        const params = new URLSearchParams({
+          token: payload.token,
+          name: payload.name,
+          score: payload.score,
+          coins: payload.coins,
+          level: payload.level,
+          timestamp: payload.timestamp
+        });
+        const getUrl = `${this.webhookUrl}${this.webhookUrl.includes('?') ? '&' : '?'}${params.toString()}`;
+        const img = new Image();
+        img.src = getUrl;
+
+        this.updateCloudBadge('CLOUD SYNCED');
+        setTimeout(() => this.updateCloudBadge(), 4000);
+        return true;
+      } catch (getErr) {
+        this.queuePending(entry);
+        this.updateCloudBadge('QUEUED RETRY');
+        return false;
+      }
     }
   }
 
